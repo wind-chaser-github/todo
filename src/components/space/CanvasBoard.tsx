@@ -349,9 +349,9 @@ function TimerView() {
   const secs = (timeLeft % 60).toString().padStart(2, '0');
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-4 lg:p-6 lg:pt-8 min-h-full flex flex-col items-center justify-center overflow-y-auto custom-scrollbar-light">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full w-full p-4 pt-20 lg:p-6 lg:pt-24 flex flex-col items-center justify-center overflow-y-auto">
       <div className="text-center mb-6 lg:mb-8 shrink-0 mt-auto">
-        <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-2"><BlurText text="Focus Mode" delay={50} /></h2>
+        <h2 className="text-xs lg:text-sm font-bold text-blue-400 uppercase tracking-widest mb-2"><BlurText text="Focus Mode" delay={50} /></h2>
         <select 
           value={selectedTask}
           onChange={(e) => setSelectedTask(e.target.value)}
@@ -365,15 +365,15 @@ function TimerView() {
         </select>
       </div>
 
-      <div className="relative w-56 h-56 lg:w-64 lg:h-64 flex items-center justify-center mb-8 lg:mb-10 shrink-0">
-        <div className={`absolute inset-0 bg-blue-300/30 rounded-full blur-2xl lg:blur-3xl transition-all duration-1000 ${isRunning ? 'scale-110 opacity-100' : 'scale-90 opacity-50'}`} />
-        <div className="absolute inset-0 border-[12px] lg:border-[16px] border-white/60 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.05)]" />
+      <div className="relative w-48 h-48 lg:w-72 lg:h-72 flex items-center justify-center mb-8 lg:mb-12 shrink-0">
+        <div className={`absolute inset-0 bg-blue-300/30 rounded-full blur-xl lg:blur-3xl transition-all duration-1000 ${isRunning ? 'scale-110 opacity-100' : 'scale-90 opacity-50'}`} />
+        <div className="absolute inset-0 border-[10px] lg:border-[16px] border-white/60 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.05)]" />
         <div className="relative flex flex-col items-center">
-          <span className="text-6xl lg:text-7xl font-black text-slate-800 tracking-tighter tabular-nums drop-shadow-sm">{mins}:{secs}</span>
+          <span className="text-5xl lg:text-7xl font-black text-slate-800 tracking-tighter tabular-nums drop-shadow-sm">{mins}:{secs}</span>
         </div>
       </div>
 
-      <div className="flex gap-4 shrink-0 mb-auto pb-4">
+      <div className="flex gap-4 shrink-0 mb-auto pb-8 lg:pb-12">
         <button 
           onClick={() => setIsRunning(!isRunning)}
           className={`w-16 h-16 lg:w-20 lg:h-20 rounded-full flex items-center justify-center shadow-lg transition-all ${isRunning ? 'bg-rose-100 text-rose-500 hover:bg-rose-200' : 'bg-blue-500 text-white hover:bg-blue-600 hover:scale-105'} active:scale-95`}
