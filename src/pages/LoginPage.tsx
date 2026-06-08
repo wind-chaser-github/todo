@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, ArrowRight, KeyRound, Copy, Check } from 'lucide-react';
@@ -9,8 +9,14 @@ import Particles from '../components/react-bits/Particles/Particles';
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { loadFromCloud, setAccessCode } = useTodoStore();
+  const { loadFromCloud, setAccessCode, accessCode } = useTodoStore();
   
+  useEffect(() => {
+    if (accessCode) {
+      navigate('/board', { replace: true });
+    }
+  }, [accessCode, navigate]);
+
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
