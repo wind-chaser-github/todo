@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Check, Briefcase, BookOpen, HeartPulse, Coffee, CircleEllipsis } from 'lucide-react';
 import type { Todo, Category } from '../../types';
@@ -43,7 +42,7 @@ export function TodoCard({ todo, dateStr, isCompleted }: TodoCardProps) {
       className="w-full relative"
     >
       <SpotlightCard 
-        spotlightColor={style.spotlight}
+        spotlightColor={style.spotlight as any}
         className={cn(
           "w-full p-4 rounded-3xl flex items-center gap-4 transition-all shadow-[0_2px_15px_-3px_rgba(0,0,0,0.02)]",
           isCompleted ? "bg-slate-50 grayscale border border-slate-100" : "bg-white border border-transparent",

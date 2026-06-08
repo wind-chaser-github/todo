@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
-import type { TodoState, Todo, Position } from '../types';
+import type { TodoState } from '../types';
 
-let debounceTimer: NodeJS.Timeout;
+let debounceTimer: ReturnType<typeof setTimeout>;
 
 export const useTodoStore = create<TodoState>()(
   (set, get) => ({

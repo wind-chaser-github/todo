@@ -1,19 +1,17 @@
-export type Priority = 'low' | 'medium' | 'high' | 'none';
+export type Priority = 'high' | 'medium' | 'low' | 'none';
+export type Category = 'work' | 'study' | 'health' | 'life' | 'other';
+export type RecurrenceType = 'none' | 'daily' | 'weekly' | 'monthly';
 
 export interface Position {
   x: number;
   y: number;
 }
 
-export type Priority = 'high' | 'medium' | 'low' | 'none';
-export type Category = 'work' | 'study' | 'health' | 'life' | 'other';
-export type RecurrenceType = 'none' | 'daily' | 'weekly' | 'monthly';
-
 export interface Todo {
   id: string;
   text: string;
   completed: boolean; // For one-off tasks
-  completedDates: string[]; // For recurring tasks (stores YYYY-MM-DD strings)
+  completedDates: string[]; // For recurring tasks
   priority: Priority;
   category: Category;
   recurrence?: { type: RecurrenceType, values?: number[] };
@@ -36,7 +34,7 @@ export interface TodoState {
     apiKey: string;
     model: string;
   };
-
+  
   // Cloud Sync
   accessCode: string | null;
   isSyncing: boolean;

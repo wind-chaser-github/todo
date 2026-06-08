@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Plus, Check, Play, BarChart2, Home, Sparkles, X, ChevronLeft, ChevronRight, Calendar as CalendarIcon, AlignLeft, CalendarClock, Flame, Briefcase, BookOpen, HeartPulse, Coffee, CircleEllipsis } from 'lucide-react';
+import { Plus, Play, BarChart2, Home, Sparkles, X, ChevronLeft, ChevronRight, Calendar as CalendarIcon, AlignLeft, Flame } from 'lucide-react';
 import { useTodoStore } from '../../store/useTodoStore';
 import { parseWithLLM } from '../../utils/nlp';
 import { TodoCard } from './TodoCard';
@@ -331,7 +331,7 @@ function TimerView() {
   const [selectedTask, setSelectedTask] = useState<string>('');
 
   React.useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setInterval>;
     if (isRunning && timeLeft > 0) {
       timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
     } else if (isRunning && timeLeft === 0) {
@@ -546,7 +546,7 @@ function AddModal({ onClose, date, setDate }: { onClose: () => void, date: numbe
   );
 }
 
-function DockButton({ active, icon, label, onClick, color }: any) {
+function DockButton({ active, icon, onClick, color }: any) {
   return (
     <button onClick={onClick} className={`flex flex-col items-center gap-1 transition-all ${active ? color : 'text-slate-300 hover:text-slate-400'}`}>
       <div className={`p-2 rounded-2xl transition-all ${active ? 'bg-slate-50 scale-110 shadow-sm' : ''}`}>{icon}</div>

@@ -5,6 +5,7 @@ export interface ParseResult {
   text: string;
   dueDate: number | null;
   priority: Priority;
+  category?: 'work' | 'study' | 'health' | 'life' | 'other';
 }
 
 // Fallback local parser
@@ -79,7 +80,7 @@ Rules:
 - Return raw JSON only.`;
 
   try {
-    const response = await fetch(`${llmConfig.baseUrl}/chat/completions`, {
+    const response = await fetch(`${llmConfig.apiUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
