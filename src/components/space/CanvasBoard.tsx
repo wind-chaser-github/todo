@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Plus, Play, BarChart2, Home, Sparkles, X, ChevronLeft, ChevronRight, Calendar as CalendarIcon, AlignLeft, Flame } from 'lucide-react';
+import { Plus, Play, BarChart2, Home, Sparkles, X, ChevronLeft, ChevronRight, Calendar as CalendarIcon, AlignLeft, Flame, LogOut, CloudRain, Coffee, Wind } from 'lucide-react';
 import { useTodoStore } from '../../store/useTodoStore';
 import { parseWithLLM } from '../../utils/nlp';
 import { TodoCard } from './TodoCard';
@@ -68,7 +68,15 @@ export function CanvasBoard() {
         />
       </div>
 
-      <div className="hidden lg:flex w-full h-full relative z-10 max-w-[1600px] mx-auto p-6 gap-6">
+      <button 
+        onClick={() => useTodoStore.setState({ accessCode: null })}
+        className="absolute top-6 right-6 z-50 p-3 rounded-full bg-white/50 backdrop-blur-md border border-white/40 text-slate-400 hover:text-slate-700 hover:bg-white shadow-sm transition-all"
+        title="Logout"
+      >
+        <LogOut className="w-5 h-5" />
+      </button>
+
+      <div className="hidden lg:flex w-full h-full relative z-10 max-w-[1600px] mx-auto p-6 gap-6 pt-20">
         <div className="w-[550px] shrink-0 flex flex-col bg-white/70 backdrop-blur-2xl rounded-[3rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] overflow-hidden border border-white">
           <CalendarStrip selectedDate={selectedDate} onSelect={setSelectedDate} />
           <div className="flex-1 overflow-y-auto custom-scrollbar-light relative">
@@ -124,6 +132,13 @@ export function CanvasBoard() {
             {activeTab === 'stats' && <StatsView key="stats" />}
           </AnimatePresence>
         </div>
+
+        <button 
+          onClick={() => useTodoStore.setState({ accessCode: null })}
+          className="absolute top-6 right-6 z-50 p-2.5 rounded-full bg-white/80 backdrop-blur-md border border-white text-slate-400 shadow-sm"
+        >
+          <LogOut className="w-5 h-5" />
+        </button>
 
         <div className="h-24 pb-6 px-8 flex items-center justify-between bg-white/90 backdrop-blur-xl border-t border-slate-100 z-50">
           <DockButton active={activeTab === 'habits'} icon={<Home className="w-6 h-6" />} label="Timeline" onClick={() => setActiveTab('habits')} color="text-emerald-400" />
@@ -345,6 +360,8 @@ function TimerView() {
   const { addFocusTime } = useTodoStore();
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
+  const [ambient, setAmbient] = useState<'none' | 'rain' | 'cafe' | 'space'>('none');
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   React.useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
@@ -361,11 +378,45 @@ function TimerView() {
     return () => clearInterval(timer);
   }, [isRunning, timeLeft, addFocusTime]);
 
+  useEffect(() => {
+    if (ambient !== 'none') {
+       const urls = {
+          rain: 'https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3?filename=heavy-rain-nature-sounds-8186.mp3',
+          cafe: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=cafe-background-noise-10023.mp3',
+          space: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_2db509041d.mp3?filename=white-noise-10min-109783.mp3'
+       };
+       if (!audioRef.current) {
+          audioRef.current = new Audio(urls[ambient]);
+          audioRef.current.loop = true;
+       } else {
+          audioRef.current.src = urls[ambient];
+       }
+       if (isRunning) audioRef.current.play().catch(console.error);
+    } else {
+       if (audioRef.current) {
+         audioRef.current.pause();
+       }
+    }
+  }, [ambient]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isRunning && ambient !== 'none') audioRef.current.play().catch(console.error);
+      else audioRef.current.pause();
+    }
+  }, [isRunning, ambient]);
+
   const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
   const secs = (timeLeft % 60).toString().padStart(2, '0');
 
   return (
     <div className="h-full w-full flex flex-col items-center justify-center relative">
+      <div className="absolute top-4 right-4 flex gap-2 z-30">
+        <button onClick={() => setAmbient(ambient === 'rain' ? 'none' : 'rain')} className={`p-2.5 rounded-full backdrop-blur-md transition-all border ${ambient === 'rain' ? 'bg-blue-500 border-blue-400 text-white shadow-[0_0_20px_rgba(59,130,246,0.4)] scale-110' : 'bg-white/50 border-white text-slate-400 hover:text-slate-600 hover:bg-white'}`} title="Rain"><CloudRain className="w-5 h-5" /></button>
+        <button onClick={() => setAmbient(ambient === 'cafe' ? 'none' : 'cafe')} className={`p-2.5 rounded-full backdrop-blur-md transition-all border ${ambient === 'cafe' ? 'bg-amber-500 border-amber-400 text-white shadow-[0_0_20px_rgba(245,158,11,0.4)] scale-110' : 'bg-white/50 border-white text-slate-400 hover:text-slate-600 hover:bg-white'}`} title="Cafe"><Coffee className="w-5 h-5" /></button>
+        <button onClick={() => setAmbient(ambient === 'space' ? 'none' : 'space')} className={`p-2.5 rounded-full backdrop-blur-md transition-all border ${ambient === 'space' ? 'bg-indigo-500 border-indigo-400 text-white shadow-[0_0_20px_rgba(99,102,241,0.4)] scale-110' : 'bg-white/50 border-white text-slate-400 hover:text-slate-600 hover:bg-white'}`} title="Space"><Wind className="w-5 h-5" /></button>
+      </div>
+
       <div className="absolute top-10 lg:top-16 left-1/2 -translate-x-1/2 text-center z-20">
          <TrueFocus 
             sentence={isRunning ? "FOCUSING" : "AWAITING"}
@@ -405,41 +456,86 @@ function TimerView() {
 function StatsView() {
   const { focusLogs } = useTodoStore();
   const stats = useMemo(() => {
-    const data = [];
-    const labels = [];
+    const WEEKS = 12;
+    const DAYS = 7;
+    const grid = [];
     let totalSeconds = 0;
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const iso = d.toISOString().split('T')[0];
-      const secs = focusLogs[iso] || 0;
-      data.push(secs);
-      labels.push('SMTWTFS'[d.getDay()]);
-      totalSeconds += secs;
+    
+    // Generate dates from today backwards
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Start from Sunday of the week that is WEEKS-1 ago
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - today.getDay() - (WEEKS - 1) * 7);
+
+    for (let w = 0; w < WEEKS; w++) {
+      const col = [];
+      for (let d = 0; d < DAYS; d++) {
+        const current = new Date(startDate);
+        current.setDate(startDate.getDate() + (w * 7) + d);
+        
+        const iso = current.toISOString().split('T')[0];
+        const secs = focusLogs[iso] || 0;
+        
+        // Skip future dates visually
+        if (current > today) {
+          col.push({ date: iso, secs: -1 });
+        } else {
+          col.push({ date: iso, secs });
+          totalSeconds += secs;
+        }
+      }
+      grid.push(col);
     }
-    const max = Math.max(...data, 25 * 60);
-    const heights = data.map(s => (s / max) * 100);
-    return { heights, labels, totalHours: Math.floor(totalSeconds / 3600), totalMins: Math.floor((totalSeconds % 3600) / 60) };
+
+    return { grid, totalHours: Math.floor(totalSeconds / 3600), totalMins: Math.floor((totalSeconds % 3600) / 60) };
   }, [focusLogs]);
 
+  const getIntensityClass = (secs: number) => {
+    if (secs < 0) return 'bg-transparent border border-slate-100 border-dashed'; // Future
+    if (secs === 0) return 'bg-slate-100 border border-slate-200/50';
+    if (secs < 30 * 60) return 'bg-blue-200 border border-blue-300 shadow-[0_0_10px_rgba(191,219,254,0.5)]';
+    if (secs < 60 * 60) return 'bg-blue-400 border border-blue-500 shadow-[0_0_15px_rgba(96,165,250,0.6)]';
+    if (secs < 120 * 60) return 'bg-blue-500 border border-blue-600 shadow-[0_0_20px_rgba(59,130,246,0.7)]';
+    return 'bg-blue-600 border border-blue-700 shadow-[0_0_25px_rgba(37,99,235,0.8)]';
+  };
+
   return (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="h-full flex flex-col">
-      <div className="flex justify-between items-end mb-8">
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="h-full flex flex-col p-2">
+      <div className="flex justify-between items-end mb-6">
         <div>
-          <h1 className="text-2xl font-black text-slate-800 mb-1">Weekly Focus</h1>
+          <h1 className="text-2xl font-black text-slate-800 mb-1">Focus Activity</h1>
           <p className="text-slate-400 font-medium">{stats.totalHours}h {stats.totalMins}m total time</p>
         </div>
-        <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-2xl shadow-inner"><Flame className="w-6 h-6 text-orange-500" /></div>
+        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-2xl shadow-inner"><Flame className="w-6 h-6 text-blue-500" /></div>
       </div>
-      <div className="flex items-end justify-between flex-1 gap-3 pt-4 border-t border-slate-100/50">
-        {stats.heights.map((h, i) => (
-          <div key={i} className="w-full flex flex-col items-center gap-3">
-            <div className="w-full bg-slate-100/50 rounded-full relative overflow-hidden h-full">
-              <div className="absolute bottom-0 w-full bg-emerald-400 rounded-full transition-all duration-1000 ease-out" style={{ height: `${h}%` }} />
+      
+      <div className="flex-1 flex flex-col justify-center items-center overflow-x-auto custom-scrollbar-light pb-4">
+        <div className="flex gap-2.5">
+          {stats.grid.map((week, wIdx) => (
+            <div key={wIdx} className="flex flex-col gap-2.5">
+              {week.map((day) => (
+                <div 
+                  key={day.date} 
+                  className={`w-5 h-5 lg:w-6 lg:h-6 rounded-md transition-all duration-300 hover:scale-125 hover:z-10 cursor-help ${getIntensityClass(day.secs)}`}
+                  title={day.secs >= 0 ? `${day.date}: ${Math.floor(day.secs/60)} mins` : ''}
+                />
+              ))}
             </div>
-            <span className="text-[11px] font-bold text-slate-400">{stats.labels[i]}</span>
+          ))}
+        </div>
+        <div className="mt-8 flex items-center gap-3 text-xs font-bold text-slate-400">
+          <span>Less</span>
+          <div className="flex gap-2">
+            <div className={`w-4 h-4 rounded-sm ${getIntensityClass(0)}`} />
+            <div className={`w-4 h-4 rounded-sm ${getIntensityClass(20*60)}`} />
+            <div className={`w-4 h-4 rounded-sm ${getIntensityClass(40*60)}`} />
+            <div className={`w-4 h-4 rounded-sm ${getIntensityClass(90*60)}`} />
+            <div className={`w-4 h-4 rounded-sm ${getIntensityClass(150*60)}`} />
           </div>
-        ))}
+          <span>More</span>
+        </div>
       </div>
     </motion.div>
   );

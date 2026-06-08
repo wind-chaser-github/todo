@@ -1,11 +1,13 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import type { TodoState } from '../types';
 
 let debounceTimer: ReturnType<typeof setTimeout>;
 
 export const useTodoStore = create<TodoState>()(
-  (set, get) => ({
+  persist(
+    (set, get) => ({
     todos: [],
     focusModeId: null,
     focusLogs: {}, // "YYYY-MM-DD" -> seconds
@@ -158,7 +160,11 @@ export const useTodoStore = create<TodoState>()(
         return t;
       })
     })),
-  })
+  }),
+  {
+    name: 'todo-storage',
+  }
+  )
 );
 
 // Subscribe to store changes and sync to cloud debounced
