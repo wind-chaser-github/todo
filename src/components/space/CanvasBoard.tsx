@@ -5,13 +5,15 @@ import { useTodoStore } from '../../store/useTodoStore';
 import { parseWithLLM } from '../../utils/nlp';
 import { TodoCard } from './TodoCard';
 import Particles from '../react-bits/Particles/Particles';
-import BlurText from '../react-bits/BlurText/BlurText';
+import TrueFocus from '../react-bits/TrueFocus/TrueFocus';
+import Magnet from '../react-bits/Magnet/Magnet';
 import type { Category, RecurrenceType } from '../../types';
 
 type Tab = 'habits' | 'timer' | 'stats';
 
 export function CanvasBoard() {
   const [activeTab, setActiveTab] = useState<Tab>('habits');
+  const [activeRightTab, setActiveRightTab] = useState<'timer' | 'stats'>('timer');
   const [showAddModal, setShowAddModal] = useState(false);
   
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -84,12 +86,27 @@ export function CanvasBoard() {
           )}
         </div>
 
-        <div className="flex-1 flex flex-col gap-6">
-          <div className="flex-1 bg-blue-50/50 backdrop-blur-2xl rounded-[3rem] shadow-sm border border-white overflow-hidden relative">
-            <TimerView />
+        <div className="flex-1 bg-white/60 backdrop-blur-3xl rounded-[3rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] overflow-hidden border border-white flex flex-col p-6">
+          <div className="flex justify-center mb-8 shrink-0">
+             <div className="bg-white/80 p-1.5 rounded-full flex gap-2 shadow-sm border border-blue-50/50">
+               <button onClick={() => setActiveRightTab('timer')} className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${activeRightTab==='timer' ? 'bg-blue-500 text-white shadow-md scale-105' : 'text-slate-500 hover:bg-blue-50 hover:text-blue-600'}`}>Focus Mode</button>
+               <button onClick={() => setActiveRightTab('stats')} className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${activeRightTab==='stats' ? 'bg-blue-500 text-white shadow-md scale-105' : 'text-slate-500 hover:bg-blue-50 hover:text-blue-600'}`}>Weekly Focus</button>
+             </div>
           </div>
-          <div className="h-[350px] bg-slate-50/50 backdrop-blur-2xl rounded-[3rem] shadow-sm border border-white overflow-hidden p-8">
-            <StatsView />
+          
+          <div className="flex-1 relative overflow-hidden">
+             <AnimatePresence mode="wait">
+               {activeRightTab === 'timer' && (
+                 <motion.div key="timer" initial={{opacity:0, scale:0.98}} animate={{opacity:1, scale:1}} exit={{opacity:0, scale:0.98}} className="absolute inset-0">
+                   <TimerView />
+                 </motion.div>
+               )}
+               {activeRightTab === 'stats' && (
+                 <motion.div key="stats" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-20}} className="absolute inset-0">
+                   <StatsView />
+                 </motion.div>
+               )}
+             </AnimatePresence>
           </div>
         </div>
       </div>
@@ -109,7 +126,7 @@ export function CanvasBoard() {
         </div>
 
         <div className="h-24 pb-6 px-8 flex items-center justify-between bg-white/90 backdrop-blur-xl border-t border-slate-100 z-50">
-          <DockButton active={activeTab === 'habits'} icon={<Home className="w-6 h-6" />} label="Habits" onClick={() => setActiveTab('habits')} color="text-emerald-400" />
+          <DockButton active={activeTab === 'habits'} icon={<Home className="w-6 h-6" />} label="Timeline" onClick={() => setActiveTab('habits')} color="text-emerald-400" />
           <button 
             onClick={() => {
               if (isPastDate) return alert("过去的时光已成定局，只能回味，不能再增加任务啦！");
@@ -120,7 +137,7 @@ export function CanvasBoard() {
             <Plus className="w-7 h-7" />
           </button>
           <DockButton active={activeTab === 'timer'} icon={<Play className="w-6 h-6" />} label="Focus" onClick={() => setActiveTab('timer')} color="text-amber-400" />
-          <DockButton active={activeTab === 'stats'} icon={<BarChart2 className="w-6 h-6" />} label="Stats" onClick={() => setActiveTab('stats')} color="text-blue-400" />
+          <DockButton active={activeTab === 'stats'} icon={<BarChart2 className="w-6 h-6" />} label="Weekly" onClick={() => setActiveTab('stats')} color="text-blue-400" />
         </div>
       </div>
 
@@ -325,10 +342,9 @@ function HabitsView({ date }: { date: number }) {
 }
 
 function TimerView() {
-  const { todos, addFocusTime } = useTodoStore();
+  const { addFocusTime } = useTodoStore();
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<string>('');
 
   React.useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
@@ -349,39 +365,40 @@ function TimerView() {
   const secs = (timeLeft % 60).toString().padStart(2, '0');
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full w-full p-4 pt-20 lg:p-6 lg:pt-24 flex flex-col items-center justify-center overflow-y-auto">
-      <div className="text-center mb-6 lg:mb-8 shrink-0 mt-auto">
-        <h2 className="text-xs lg:text-sm font-bold text-blue-400 uppercase tracking-widest mb-2"><BlurText text="Focus Mode" delay={50} /></h2>
-        <select 
-          value={selectedTask}
-          onChange={(e) => setSelectedTask(e.target.value)}
-          disabled={isRunning}
-          className="mt-2 appearance-none bg-white/50 backdrop-blur-md border border-blue-100 text-slate-700 py-2 px-6 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-300 shadow-sm transition-all text-sm font-medium max-w-[200px] lg:max-w-none truncate"
-        >
-          <option value="">-- 自主专注 --</option>
-          {todos.filter(t => !t.completed).map(t => (
-            <option key={t.id} value={t.id}>{t.text}</option>
-          ))}
-        </select>
+    <div className="h-full w-full flex flex-col items-center justify-center relative">
+      <div className="absolute top-10 lg:top-16 left-1/2 -translate-x-1/2 text-center z-20">
+         <TrueFocus 
+            sentence={isRunning ? "FOCUSING" : "AWAITING"}
+            manualMode={false}
+            blurAmount={4}
+            borderColor="#60a5fa"
+            animationDuration={1}
+            pauseBetweenAnimations={1}
+          />
       </div>
 
-      <div className="relative w-48 h-48 lg:w-72 lg:h-72 flex items-center justify-center mb-8 lg:mb-12 shrink-0">
-        <div className={`absolute inset-0 bg-blue-300/30 rounded-full blur-xl lg:blur-3xl transition-all duration-1000 ${isRunning ? 'scale-110 opacity-100' : 'scale-90 opacity-50'}`} />
-        <div className="absolute inset-0 border-[10px] lg:border-[16px] border-white/60 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.05)]" />
+      <div className="relative w-64 h-64 lg:w-96 lg:h-96 flex items-center justify-center mb-16">
+        <div className={`absolute inset-0 bg-blue-400/20 rounded-full blur-[60px] transition-all duration-1000 ${isRunning ? 'scale-110 opacity-100' : 'scale-90 opacity-50'}`} />
+        <div className={`absolute inset-0 border-[12px] lg:border-[20px] rounded-full transition-all duration-[2000ms] ease-out ${isRunning ? 'border-blue-400 shadow-[0_0_80px_rgba(96,165,250,0.3)] scale-100' : 'border-slate-200 scale-95'}`} />
+        
         <div className="relative flex flex-col items-center">
-          <span className="text-5xl lg:text-7xl font-black text-slate-800 tracking-tighter tabular-nums drop-shadow-sm">{mins}:{secs}</span>
+          <span className="text-7xl lg:text-8xl font-black text-slate-800 tracking-tighter tabular-nums drop-shadow-sm">
+             {mins}:{secs}
+          </span>
         </div>
       </div>
 
-      <div className="flex gap-4 shrink-0 mb-auto pb-8 lg:pb-12">
-        <button 
-          onClick={() => setIsRunning(!isRunning)}
-          className={`w-16 h-16 lg:w-20 lg:h-20 rounded-full flex items-center justify-center shadow-lg transition-all ${isRunning ? 'bg-rose-100 text-rose-500 hover:bg-rose-200' : 'bg-blue-500 text-white hover:bg-blue-600 hover:scale-105'} active:scale-95`}
-        >
-          {isRunning ? <div className="w-5 h-5 lg:w-6 lg:h-6 bg-rose-500 rounded-sm" /> : <Play className="w-6 h-6 lg:w-8 lg:h-8 ml-1" />}
-        </button>
+      <div className="absolute bottom-[10%] lg:bottom-[20%] left-1/2 -translate-x-1/2 z-20">
+         <Magnet padding={100} disabled={false} magnetStrength={3}>
+           <button 
+              onClick={() => setIsRunning(!isRunning)}
+              className={`w-20 h-20 lg:w-24 lg:h-24 rounded-full flex items-center justify-center transition-all duration-500 hover:scale-110 active:scale-95 ${isRunning ? 'bg-slate-50 text-rose-500 shadow-[0_0_40px_rgba(244,63,94,0.3)] border border-rose-100' : 'bg-blue-500 text-white shadow-[0_10px_50px_rgba(59,130,246,0.4)]'}`}
+            >
+              {isRunning ? <div className="w-6 h-6 lg:w-8 lg:h-8 bg-rose-500 rounded-sm" /> : <Play className="w-8 h-8 lg:w-10 lg:h-10 ml-2" fill="currentColor" />}
+            </button>
+         </Magnet>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
