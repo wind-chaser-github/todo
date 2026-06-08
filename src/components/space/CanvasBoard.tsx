@@ -349,14 +349,14 @@ function TimerView() {
   const secs = (timeLeft % 60).toString().padStart(2, '0');
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-6 pt-12 min-h-full flex flex-col items-center justify-center">
-      <div className="text-center mb-8">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-4 lg:p-6 lg:pt-8 min-h-full flex flex-col items-center justify-center overflow-y-auto custom-scrollbar-light">
+      <div className="text-center mb-6 lg:mb-8 shrink-0 mt-auto">
         <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-2"><BlurText text="Focus Mode" delay={50} /></h2>
         <select 
           value={selectedTask}
           onChange={(e) => setSelectedTask(e.target.value)}
           disabled={isRunning}
-          className="mt-4 appearance-none bg-white/50 backdrop-blur-md border border-blue-100 text-slate-700 py-2 px-6 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-300 shadow-sm transition-all text-sm font-medium"
+          className="mt-2 appearance-none bg-white/50 backdrop-blur-md border border-blue-100 text-slate-700 py-2 px-6 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-300 shadow-sm transition-all text-sm font-medium max-w-[200px] lg:max-w-none truncate"
         >
           <option value="">-- 自主专注 --</option>
           {todos.filter(t => !t.completed).map(t => (
@@ -365,20 +365,20 @@ function TimerView() {
         </select>
       </div>
 
-      <div className="relative w-72 h-72 flex items-center justify-center mb-16">
-        <div className={`absolute inset-0 bg-blue-300/30 rounded-full blur-3xl transition-all duration-1000 ${isRunning ? 'scale-110 opacity-100' : 'scale-90 opacity-50'}`} />
-        <div className="absolute inset-0 border-[16px] border-white/60 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.05)]" />
+      <div className="relative w-56 h-56 lg:w-64 lg:h-64 flex items-center justify-center mb-8 lg:mb-10 shrink-0">
+        <div className={`absolute inset-0 bg-blue-300/30 rounded-full blur-2xl lg:blur-3xl transition-all duration-1000 ${isRunning ? 'scale-110 opacity-100' : 'scale-90 opacity-50'}`} />
+        <div className="absolute inset-0 border-[12px] lg:border-[16px] border-white/60 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.05)]" />
         <div className="relative flex flex-col items-center">
-          <span className="text-7xl font-black text-slate-800 tracking-tighter tabular-nums drop-shadow-sm">{mins}:{secs}</span>
+          <span className="text-6xl lg:text-7xl font-black text-slate-800 tracking-tighter tabular-nums drop-shadow-sm">{mins}:{secs}</span>
         </div>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex gap-4 shrink-0 mb-auto pb-4">
         <button 
           onClick={() => setIsRunning(!isRunning)}
-          className={`w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition-all ${isRunning ? 'bg-rose-100 text-rose-500 hover:bg-rose-200' : 'bg-blue-500 text-white hover:bg-blue-600 hover:scale-105'} active:scale-95`}
+          className={`w-16 h-16 lg:w-20 lg:h-20 rounded-full flex items-center justify-center shadow-lg transition-all ${isRunning ? 'bg-rose-100 text-rose-500 hover:bg-rose-200' : 'bg-blue-500 text-white hover:bg-blue-600 hover:scale-105'} active:scale-95`}
         >
-          {isRunning ? <div className="w-6 h-6 bg-rose-500 rounded-sm" /> : <Play className="w-8 h-8 ml-1" />}
+          {isRunning ? <div className="w-5 h-5 lg:w-6 lg:h-6 bg-rose-500 rounded-sm" /> : <Play className="w-6 h-6 lg:w-8 lg:h-8 ml-1" />}
         </button>
       </div>
     </motion.div>
